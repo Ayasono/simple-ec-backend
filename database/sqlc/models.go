@@ -4,6 +4,7 @@ package database
 
 import (
 	"database/sql"
+	"time"
 )
 
 type Address struct {
@@ -88,10 +89,10 @@ type Sku struct {
 }
 
 type User struct {
-	ID           int32          `json:"id"`
-	Username     sql.NullString `json:"username"`
-	Email        sql.NullString `json:"email"`
-	PasswordHash sql.NullString `json:"password_hash"`
-	CreatedAt    sql.NullTime   `json:"created_at"`
-	UpdatedAt    sql.NullTime   `json:"updated_at"`
+	ID           int32     `json:"id"`
+	Username     string    `json:"username"`
+	Email        string    `json:"email"`
+	PasswordHash string    `json:"password_hash"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }

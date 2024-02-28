@@ -6,3 +6,12 @@ INSERT INTO users (username,
                    updated_at)
 VALUES ($1, $2, $3, NOW(), NOW())
 RETURNING id;
+
+-- name: ListUsers :many
+SELECT id,
+       username,
+       email,
+       created_at,
+       updated_at
+FROM users
+ORDER BY id;

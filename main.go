@@ -1,7 +1,6 @@
 package main
 
 import (
-  "database/sql"
   "net/http"
 
   "github.com/Ayasono/simple-kins-backend/database"
@@ -23,24 +22,33 @@ func main() {
 
     var req CreateUserRequest
     if err := c.ShouldBindJSON(&req); err != nil {
-      c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+      c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data"})
       return
     }
 
-    // 转换 CreateUserRequest 为 CreateUserParams
-    params := database2.CreateUserParams{
-      Username:     sql.NullString{String: req.Username, Valid: true},
-      Email:        sql.NullString{String: req.Email, Valid: true},
-      PasswordHash: sql.NullString{String: req.PasswordHash, Valid: true},
+    // 现在直接使用req里的字段，假设数据库操作可以接受string
+    user, err := queries.CreateUser(c, database2.CreateUserParams{
+      Username:     req.Username,
+      Email:        req.Email,
+      PasswordHash: req.PasswordHash,
+    })
+
+    if err != nil {
+      c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
+      return
     }
 
-    user, err := queries.CreateUser(c, params)
+    c.JSON(http.StatusOK, gin.H{"user": user})
+  })
+
+  r.GET("/users", func(c *gin.Context) {
+    users, err := queries.ListUsers(c)
     if err != nil {
       c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
       return
     }
 
-    c.JSON(http.StatusOK, gin.H{"user": user})
+    c.JSON(http.StatusOK, gin.H{"users": users})
   })
 
   r.Run(":8080")
