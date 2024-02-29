@@ -1,7 +1,7 @@
-version: "1"
+version: 2
 packages:
   - name: "database"
-    path: "./database/sqlc/"
+    path: "./models/"
     queries: "./database/query/"
     schema: "./database/migration/"
     engine: "postgresql"
