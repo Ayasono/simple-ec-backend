@@ -7,10 +7,18 @@ import (
 )
 
 func UserRoutes(router *gin.Engine, queries *database.Queries) {
+  // users group
   userGroup := router.Group("/users")
   {
-    userGroup.GET("/", (&services.UserService{Queries: queries}).ListUsers)
+    userGroup.GET("/", (&services.Services{Queries: queries}).ListUsers)
 
-    userGroup.POST("/", (&services.UserService{Queries: queries}).CreateUser)
+    userGroup.POST("/", (&services.Services{Queries: queries}).CreateUser)
+
+    userGroup.GET("/:email", (&services.Services{Queries: queries}).GetUserByEmail)
+  }
+  // product group
+  productGroup := router.Group("/products")
+  {
+    productGroup.GET("/", (&services.Services{Queries: queries}).ListProducts)
   }
 }

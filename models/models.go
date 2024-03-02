@@ -56,12 +56,13 @@ type Payment struct {
 }
 
 type Product struct {
-	ID          int32          `json:"id"`
-	Name        sql.NullString `json:"name"`
-	Description sql.NullString `json:"description"`
-	CategoryID  sql.NullInt32  `json:"category_id"`
-	CreatedAt   sql.NullTime   `json:"created_at"`
-	UpdatedAt   sql.NullTime   `json:"updated_at"`
+	ID          int32        `json:"id"`
+	Name        string       `json:"name"`
+	Description string       `json:"description"`
+	CategoryID  int32        `json:"category_id"`
+	ImageUrl    string       `json:"image_url"`
+	CreatedAt   sql.NullTime `json:"created_at"`
+	UpdatedAt   sql.NullTime `json:"updated_at"`
 }
 
 type ProductSkusPurchaseType struct {

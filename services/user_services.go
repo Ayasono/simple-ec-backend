@@ -9,12 +9,9 @@ import (
 )
 
 // UserService 提供了用户相关的服务。
-type UserService struct {
-  Queries *models.Queries
-}
 
 // ListUsers 返回所有用户。
-func (s *UserService) ListUsers(c *gin.Context) {
+func (s *Services) ListUsers(c *gin.Context) {
   users, err := s.Queries.ListUsers(context.Background())
   if err != nil {
     // 处理错误的情况，这里简单返回500错误
@@ -26,29 +23,51 @@ func (s *UserService) ListUsers(c *gin.Context) {
 }
 
 // CreateUser 是创建用户的请求体。
-func (s *UserService) CreateUser(c *gin.Context) {
-  type CreateUserRequest struct {
-    Username     string `json:"username"`
-    Email        string `json:"email"`
-    PasswordHash string `json:"password_hash"`
+func (s *Services) CreateUser(c *gin.Context) {
+  type userRequest struct {
+    Username     string `json:"username" binding:"required"`
+    Email        string `json:"email" binding:"required"`
+    PasswordHash string `json:"password_hash" binding:"required"`
   }
 
-  var req CreateUserRequest
+  var req userRequest
   if err := c.ShouldBindJSON(&req); err != nil {
-    c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data"})
+    c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
     return
   }
-
-  user, err := s.Queries.CreateUser(c, models.CreateUserParams{
+  // check if email is already in use before creating a new user
+  email, err := s.Queries.GetUserByEmail(context.Background(), req.Email)
+  if err == nil {
+    c.JSON(http.StatusBadRequest, gin.H{"error": email.Email + " is already in use"})
+    return
+  }
+  // 创建用户
+  userInfo, err := s.Queries.CreateUser(context.Background(), models.CreateUserParams{
     Username:     req.Username,
     Email:        req.Email,
     PasswordHash: req.PasswordHash,
   })
-
   if err != nil {
-    c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
+    c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
     return
   }
+  // 返回用户ID
+  c.JSON(http.StatusOK, gin.H{
+    "msg":  "User created",
+    "user": userInfo,
+  })
+}
 
-  c.JSON(http.StatusOK, gin.H{"user": user})
+// GetUserByEmail 是获取用户的请求体。
+func (s *Services) GetUserByEmail(c *gin.Context) {
+  email := c.Param("email")
+  user, err := s.Queries.GetUserByEmail(context.Background(), email)
+  if err != nil {
+    c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+    return
+  }
+  c.JSON(http.StatusOK, gin.H{
+    "msg":  "ok",
+    "user": user,
+  })
 }

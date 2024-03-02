@@ -1,0 +1,9 @@
+drop table if exists addresses;
+drop table if exists order_items;
+drop table if exists orders;
+drop table if exists payments;
+drop table if exists product_skus_purchase_types;
+drop table if exists products;
+drop table if exists purchase_types;
+drop table if exists skus;
+drop table if exists users;

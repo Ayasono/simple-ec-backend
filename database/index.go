@@ -10,7 +10,7 @@ import (
 
 const (
   dbDriver = "postgres"
-  dbSource = "postgresql://root:123456@localhost:5432/postgres?sslmode=disable"
+  dbSource = "postgresql://root:123456@localhost:5432/kins_db?sslmode=disable"
 )
 
 // ConnectDB Connect initializes and returns a database connection
