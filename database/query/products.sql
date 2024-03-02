@@ -21,8 +21,18 @@ where id = $1
 returning *;
 
 -- name: ListProducts :many
-select *
-from products
-order by id
-limit $1
-offset $2;
+select p.id,
+       p.name,
+       p.description,
+       p.image_url,
+       p.category_id,
+       c.name as category_name
+from products p
+         join public.categories c on p.category_id = c.id
+order by p.id
+limit $1 offset $2;
+
+-- name: GetProductCategories :many
+select id, name
+from categories
+order by id;

@@ -67,12 +67,46 @@ func (q *Queries) DeleteProduct(ctx context.Context, id int32) (Product, error) 
 	return i, err
 }
 
-const listProducts = `-- name: ListProducts :many
-select id, name, description, category_id, image_url, created_at, updated_at
-from products
+const getProductCategories = `-- name: GetProductCategories :many
+select id, name
+from categories
 order by id
-limit $1
-offset $2
+`
+
+func (q *Queries) GetProductCategories(ctx context.Context) ([]Category, error) {
+	rows, err := q.db.QueryContext(ctx, getProductCategories)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Category
+	for rows.Next() {
+		var i Category
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listProducts = `-- name: ListProducts :many
+select p.id,
+       p.name,
+       p.description,
+       p.image_url,
+       p.category_id,
+       c.name as category_name
+from products p
+         join public.categories c on p.category_id = c.id
+order by p.id
+limit $1 offset $2
 `
 
 type ListProductsParams struct {
@@ -80,23 +114,31 @@ type ListProductsParams struct {
 	Offset int32 `json:"offset"`
 }
 
-func (q *Queries) ListProducts(ctx context.Context, arg ListProductsParams) ([]Product, error) {
+type ListProductsRow struct {
+	ID           int32  `json:"id"`
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+	ImageUrl     string `json:"image_url"`
+	CategoryID   int32  `json:"category_id"`
+	CategoryName string `json:"category_name"`
+}
+
+func (q *Queries) ListProducts(ctx context.Context, arg ListProductsParams) ([]ListProductsRow, error) {
 	rows, err := q.db.QueryContext(ctx, listProducts, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Product
+	var items []ListProductsRow
 	for rows.Next() {
-		var i Product
+		var i ListProductsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
 			&i.Description,
-			&i.CategoryID,
 			&i.ImageUrl,
-			&i.CreatedAt,
-			&i.UpdatedAt,
+			&i.CategoryID,
+			&i.CategoryName,
 		); err != nil {
 			return nil, err
 		}

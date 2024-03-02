@@ -21,6 +21,11 @@ type Address struct {
 	UpdatedAt    sql.NullTime   `json:"updated_at"`
 }
 
+type Category struct {
+	ID   int32  `json:"id"`
+	Name string `json:"name"`
+}
+
 type Order struct {
 	ID          int32          `json:"id"`
 	UserID      sql.NullInt32  `json:"user_id"`
