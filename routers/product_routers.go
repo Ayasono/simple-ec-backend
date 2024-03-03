@@ -10,7 +10,7 @@ func ProductRoutes(router *gin.Engine, queries *database.Queries) {
   // product group
   productGroup := router.Group("/products")
   {
-    productGroup.GET("/", func(context *gin.Context) {
+    productGroup.GET("", func(context *gin.Context) {
       services.ListProducts(context, queries)
     })
 

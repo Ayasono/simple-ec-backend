@@ -12,9 +12,7 @@ import (
 func ListUsers(c *gin.Context, queries *models.Queries) {
   users, err := queries.ListUsers(context.Background())
   if err != nil {
-    // 处理错误的情况，这里简单返回500错误
-    c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
-    return
+    c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
   }
   // 成功情况下，返回用户列表和200 OK状态码
   c.JSON(http.StatusOK, users)

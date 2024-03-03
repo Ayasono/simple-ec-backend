@@ -10,11 +10,11 @@ func UserRoutes(router *gin.Engine, queries *database.Queries) {
   // users group
   userGroup := router.Group("/users")
   {
-    userGroup.GET("/", func(context *gin.Context) {
+    userGroup.GET("", func(context *gin.Context) {
       services.ListUsers(context, queries)
     })
 
-    userGroup.POST("/", func(context *gin.Context) {
+    userGroup.POST("", func(context *gin.Context) {
       services.CreateUser(context, queries)
     })
 
