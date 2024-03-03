@@ -15,6 +15,7 @@ func main() {
   queries := models.New(db)
 
   routers.UserRoutes(r, queries)
+  routers.ProductRoutes(r, queries)
 
   r.Run(":8080")
 }
