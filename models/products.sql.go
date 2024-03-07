@@ -102,9 +102,12 @@ select p.id,
        p.description,
        p.image_url,
        p.category_id,
-       c.name as category_name
+       c.name as category_name,
+       COALESCE(s.single_price, 0)::float4 as single_price,
+       COALESCE(s.subs_price, 0)::float4 as subs_price
 from products p
          join public.categories c on p.category_id = c.id
+         join public.skus s on p.id = s.product_id
 order by p.id
 limit $1 offset $2
 `
@@ -115,12 +118,14 @@ type ListProductsParams struct {
 }
 
 type ListProductsRow struct {
-	ID           int32  `json:"id"`
-	Name         string `json:"name"`
-	Description  string `json:"description"`
-	ImageUrl     string `json:"image_url"`
-	CategoryID   int32  `json:"category_id"`
-	CategoryName string `json:"category_name"`
+	ID           int32   `json:"id"`
+	Name         string  `json:"name"`
+	Description  string  `json:"description"`
+	ImageUrl     string  `json:"image_url"`
+	CategoryID   int32   `json:"category_id"`
+	CategoryName string  `json:"category_name"`
+	SinglePrice  float32 `json:"single_price"`
+	SubsPrice    float32 `json:"subs_price"`
 }
 
 func (q *Queries) ListProducts(ctx context.Context, arg ListProductsParams) ([]ListProductsRow, error) {
@@ -139,6 +144,8 @@ func (q *Queries) ListProducts(ctx context.Context, arg ListProductsParams) ([]L
 			&i.ImageUrl,
 			&i.CategoryID,
 			&i.CategoryName,
+			&i.SinglePrice,
+			&i.SubsPrice,
 		); err != nil {
 			return nil, err
 		}

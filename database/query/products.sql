@@ -26,9 +26,12 @@ select p.id,
        p.description,
        p.image_url,
        p.category_id,
-       c.name as category_name
+       c.name as category_name,
+       COALESCE(s.single_price, 0)::float4 as single_price,
+       COALESCE(s.subs_price, 0)::float4 as subs_price
 from products p
          join public.categories c on p.category_id = c.id
+         join public.skus s on p.id = s.product_id
 order by p.id
 limit $1 offset $2;
 

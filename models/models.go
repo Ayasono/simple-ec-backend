@@ -86,12 +86,11 @@ type PurchaseType struct {
 
 type Sku struct {
 	ID            int32          `json:"id"`
-	ProductID     sql.NullInt32  `json:"product_id"`
-	SkuName       sql.NullString `json:"sku_name"`
-	Price         sql.NullString `json:"price"`
-	StockQuantity sql.NullInt32  `json:"stock_quantity"`
-	CreatedAt     sql.NullTime   `json:"created_at"`
-	UpdatedAt     sql.NullTime   `json:"updated_at"`
+	ProductID     int32          `json:"product_id"`
+	SkuName       string         `json:"sku_name"`
+	SinglePrice   sql.NullString `json:"single_price"`
+	SubsPrice     sql.NullString `json:"subs_price"`
+	StockQuantity int32          `json:"stock_quantity"`
 }
 
 type User struct {
