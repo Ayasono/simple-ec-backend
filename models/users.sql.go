@@ -8,6 +8,19 @@ import (
 	"time"
 )
 
+const checkUserPassword = `-- name: CheckUserPassword :one
+SELECT password_hash
+FROM users
+WHERE email = $1
+`
+
+func (q *Queries) CheckUserPassword(ctx context.Context, email string) (string, error) {
+	row := q.db.QueryRowContext(ctx, checkUserPassword, email)
+	var password_hash string
+	err := row.Scan(&password_hash)
+	return password_hash, err
+}
+
 const createUser = `-- name: CreateUser :many
 INSERT INTO users (username,
                    email,

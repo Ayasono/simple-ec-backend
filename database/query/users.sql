@@ -35,3 +35,8 @@ SELECT id,
        updated_at
 FROM users
 WHERE id = $1;
+
+-- name: CheckUserPassword :one
+SELECT password_hash
+FROM users
+WHERE email = $1;

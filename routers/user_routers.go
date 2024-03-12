@@ -21,5 +21,9 @@ func UserRoutes(router *gin.Engine, queries *database.Queries) {
     userGroup.GET("/:email", func(context *gin.Context) {
       services.GetUserByEmail(context, queries)
     })
+
+    userGroup.POST("/login", func(context *gin.Context) {
+      services.CheckUserLogin(context, queries)
+    })
   }
 }

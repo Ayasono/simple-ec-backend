@@ -5,6 +5,8 @@ import (
   "net/http"
 
   models "github.com/Ayasono/simple-kins-backend/models"
+  "github.com/Ayasono/simple-kins-backend/utils"
+  "github.com/dgrijalva/jwt-go"
   "github.com/gin-gonic/gin"
 )
 
@@ -65,5 +67,54 @@ func GetUserByEmail(c *gin.Context, queries *models.Queries) {
   c.JSON(http.StatusOK, gin.H{
     "msg":  "ok",
     "user": user,
+  })
+}
+
+func CheckUserLogin(c *gin.Context, queries *models.Queries) {
+  type userLogin struct {
+    Email        string `json:"email" binding:"required"`
+    PasswordHash string `json:"password_hash" binding:"required"`
+  }
+
+  var req userLogin
+
+  if err := c.ShouldBindJSON(&req); err != nil {
+    c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+    return
+  }
+
+  // check if email is already in use before creating a new user
+  savedPassword, err := queries.CheckUserPassword(context.Background(), req.Email)
+  if err != nil {
+    c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email"})
+    return
+  }
+
+  if req.PasswordHash != savedPassword {
+    c.JSON(http.StatusBadRequest, gin.H{
+      "msg":   "error",
+      "error": "Invalid password",
+    })
+    return
+  }
+
+  // generate JWT token
+  token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+    "email": req.Email,
+  })
+
+  jwtToken := utils.LoadEnvVariables()
+
+  tokenString, err := token.SignedString([]byte(jwtToken.Token))
+
+  if err != nil {
+    c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+    return
+  }
+
+  c.SetCookie("jwt", tokenString, 3600, "/", "127.0.0.1", false, true)
+
+  c.JSON(http.StatusOK, gin.H{
+    "msg": "ok",
   })
 }
