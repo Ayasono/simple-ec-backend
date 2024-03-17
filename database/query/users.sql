@@ -2,17 +2,15 @@
 INSERT INTO users (username,
                    email,
                    password_hash,
-                   created_at,
-                   updated_at)
-VALUES ($1, $2, $3, NOW(), NOW())
-RETURNING id, username, email, created_at, updated_at;
+                   address,
+                   phone)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, username, email, address, phone;
 
 -- name: ListUsers :many
 SELECT id,
        username,
-       email,
-       created_at,
-       updated_at
+       email
 FROM users
 ORDER BY id;
 
@@ -20,9 +18,7 @@ ORDER BY id;
 SELECT id,
        username,
        email,
-       password_hash,
-       created_at,
-       updated_at
+       password_hash
 FROM users
 WHERE email = $1;
 
@@ -30,9 +26,7 @@ WHERE email = $1;
 SELECT id,
        username,
        email,
-       password_hash,
-       created_at,
-       updated_at
+       password_hash
 FROM users
 WHERE id = $1;
 

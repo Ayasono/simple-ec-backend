@@ -5,7 +5,6 @@ package database
 
 import (
 	"context"
-	"time"
 )
 
 const checkUserPassword = `-- name: CheckUserPassword :one
@@ -25,28 +24,36 @@ const createUser = `-- name: CreateUser :many
 INSERT INTO users (username,
                    email,
                    password_hash,
-                   created_at,
-                   updated_at)
-VALUES ($1, $2, $3, NOW(), NOW())
-RETURNING id, username, email, created_at, updated_at
+                   address,
+                   phone)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, username, email, address, phone
 `
 
 type CreateUserParams struct {
 	Username     string `json:"username"`
 	Email        string `json:"email"`
 	PasswordHash string `json:"password_hash"`
+	Address      string `json:"address"`
+	Phone        string `json:"phone"`
 }
 
 type CreateUserRow struct {
-	ID        int32     `json:"id"`
-	Username  string    `json:"username"`
-	Email     string    `json:"email"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID       int32  `json:"id"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Address  string `json:"address"`
+	Phone    string `json:"phone"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) ([]CreateUserRow, error) {
-	rows, err := q.db.QueryContext(ctx, createUser, arg.Username, arg.Email, arg.PasswordHash)
+	rows, err := q.db.QueryContext(ctx, createUser,
+		arg.Username,
+		arg.Email,
+		arg.PasswordHash,
+		arg.Address,
+		arg.Phone,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -58,8 +65,8 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) ([]Creat
 			&i.ID,
 			&i.Username,
 			&i.Email,
-			&i.CreatedAt,
-			&i.UpdatedAt,
+			&i.Address,
+			&i.Phone,
 		); err != nil {
 			return nil, err
 		}
@@ -78,23 +85,26 @@ const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT id,
        username,
        email,
-       password_hash,
-       created_at,
-       updated_at
+       password_hash
 FROM users
 WHERE email = $1
 `
 
-func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+type GetUserByEmailRow struct {
+	ID           int32  `json:"id"`
+	Username     string `json:"username"`
+	Email        string `json:"email"`
+	PasswordHash string `json:"password_hash"`
+}
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
 	row := q.db.QueryRowContext(ctx, getUserByEmail, email)
-	var i User
+	var i GetUserByEmailRow
 	err := row.Scan(
 		&i.ID,
 		&i.Username,
 		&i.Email,
 		&i.PasswordHash,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -103,23 +113,26 @@ const getUserByID = `-- name: GetUserByID :one
 SELECT id,
        username,
        email,
-       password_hash,
-       created_at,
-       updated_at
+       password_hash
 FROM users
 WHERE id = $1
 `
 
-func (q *Queries) GetUserByID(ctx context.Context, id int32) (User, error) {
+type GetUserByIDRow struct {
+	ID           int32  `json:"id"`
+	Username     string `json:"username"`
+	Email        string `json:"email"`
+	PasswordHash string `json:"password_hash"`
+}
+
+func (q *Queries) GetUserByID(ctx context.Context, id int32) (GetUserByIDRow, error) {
 	row := q.db.QueryRowContext(ctx, getUserByID, id)
-	var i User
+	var i GetUserByIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.Username,
 		&i.Email,
 		&i.PasswordHash,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -127,19 +140,15 @@ func (q *Queries) GetUserByID(ctx context.Context, id int32) (User, error) {
 const listUsers = `-- name: ListUsers :many
 SELECT id,
        username,
-       email,
-       created_at,
-       updated_at
+       email
 FROM users
 ORDER BY id
 `
 
 type ListUsersRow struct {
-	ID        int32     `json:"id"`
-	Username  string    `json:"username"`
-	Email     string    `json:"email"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID       int32  `json:"id"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
 }
 
 func (q *Queries) ListUsers(ctx context.Context) ([]ListUsersRow, error) {
@@ -151,13 +160,7 @@ func (q *Queries) ListUsers(ctx context.Context) ([]ListUsersRow, error) {
 	var items []ListUsersRow
 	for rows.Next() {
 		var i ListUsersRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.Username,
-			&i.Email,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
+		if err := rows.Scan(&i.ID, &i.Username, &i.Email); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

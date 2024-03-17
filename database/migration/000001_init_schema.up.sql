@@ -47,8 +47,8 @@ CREATE TABLE "users"
     "username"      varchar   NOT NULL,
     "email"         varchar   NOT NULL,
     "password_hash" varchar   NOT NULL,
-    "created_at"    timestamp NOT NULL,
-    "updated_at"    timestamp NOT NULL
+    "address"       varchar   NOT NULL,
+    "phone"         varchar   NOT NULL
 );
 
 CREATE TABLE "addresses"
