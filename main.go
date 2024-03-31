@@ -17,7 +17,9 @@ func main() {
 	config.AllowOrigins = append(config.AllowOrigins, "http://localhost:8080")
 	config.AllowOrigins = append(config.AllowOrigins, "http://127.0.0.1:3000")
 	config.AllowOrigins = append(config.AllowOrigins, "http://127.0.0.1:8080")
+	config.AllowHeaders = append(config.AllowHeaders, "Cache-Control")
 	config.AllowCredentials = true
+
 	r.Use(cors.New(config))
 
 	db := database.ConnectDB()

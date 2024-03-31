@@ -67,9 +67,9 @@ func GetUserByEmail(c *gin.Context, queries *models.Queries) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"msg":  "ok",
-		"user": user,
+	c.JSON(http.StatusOK, utils.GeneralResStruct{
+		Msg:  "ok",
+		Data: user,
 	})
 }
 
@@ -89,15 +89,19 @@ func CheckUserLogin(c *gin.Context, queries *models.Queries) {
 	// check if email is already in use before creating a new user
 	savedPassword, err := queries.CheckUserPassword(context.Background(), req.Email)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email"})
+		c.JSON(http.StatusBadRequest, utils.GeneralResStruct{
+			Msg:   "not ok",
+			Error: "Email not found",
+		})
 		return
 	}
 
 	if req.PasswordHash != savedPassword {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"msg":   "error",
-			"error": "Invalid password",
-		})
+		c.JSON(http.StatusBadRequest, utils.GeneralResStruct{
+			Msg:   "not ok",
+			Error: "Password is incorrect",
+		},
+		)
 		return
 	}
 
@@ -111,13 +115,16 @@ func CheckUserLogin(c *gin.Context, queries *models.Queries) {
 	tokenString, err := token.SignedString([]byte(jwtToken.Token))
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+		c.JSON(http.StatusInternalServerError, utils.GeneralResStruct{
+			Msg:   "not ok",
+			Error: err.Error(),
+		})
 		return
 	}
 
 	c.SetCookie("jwt", tokenString, 3600, "/", "127.0.0.1", false, true)
 
-	c.JSON(http.StatusOK, gin.H{
-		"msg": "ok",
+	c.JSON(http.StatusOK, utils.GeneralResStruct{
+		Msg: "ok",
 	})
 }

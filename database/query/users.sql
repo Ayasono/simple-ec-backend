@@ -15,10 +15,10 @@ FROM users
 ORDER BY id;
 
 -- name: GetUserByEmail :one
-SELECT id,
-       username,
+SELECT username,
        email,
-       password_hash
+       address,
+       phone
 FROM users
 WHERE email = $1;
 
