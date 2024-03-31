@@ -1,33 +1,33 @@
 package main
 
 import (
-	database "github.com/Ayasono/simple-kins-backend/database"
-	models "github.com/Ayasono/simple-kins-backend/models"
-	"github.com/Ayasono/simple-kins-backend/routers"
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
+  database "github.com/Ayasono/simple-kins-backend/database"
+  models "github.com/Ayasono/simple-kins-backend/models"
+  "github.com/Ayasono/simple-kins-backend/routers"
+  "github.com/gin-contrib/cors"
+  "github.com/gin-gonic/gin"
 )
 
 func main() {
-	r := gin.Default()
+  r := gin.Default()
 
-	config := cors.DefaultConfig()
-	config.AllowAllOrigins = false
-	config.AllowOrigins = append(config.AllowOrigins, "http://localhost:3000")
-	config.AllowOrigins = append(config.AllowOrigins, "http://localhost:8080")
-	config.AllowOrigins = append(config.AllowOrigins, "http://127.0.0.1:3000")
-	config.AllowOrigins = append(config.AllowOrigins, "http://127.0.0.1:8080")
-	config.AllowHeaders = append(config.AllowHeaders, "Cache-Control")
-	config.AllowCredentials = true
+  allowedOrigins := []string{"http://localhost:3000", "http://localhost:8080", "http://127.0.0.1:3000", "http://127.0.0.1:8080"}
 
-	r.Use(cors.New(config))
+  config := cors.Config{
+    AllowOrigins:     allowedOrigins,
+    AllowHeaders:     []string{"Cache-Control", "Content-Type"},
+    AllowCredentials: true,
+    AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+  }
 
-	db := database.ConnectDB()
+  r.Use(cors.New(config))
 
-	queries := models.New(db)
+  db := database.ConnectDB()
 
-	routers.UserRoutes(r, queries)
-	routers.ProductRoutes(r, queries)
+  queries := models.New(db)
 
-	r.Run(":8080")
+  routers.UserRoutes(r, queries)
+  routers.ProductRoutes(r, queries)
+
+  r.Run(":8080")
 }

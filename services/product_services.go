@@ -1,44 +1,65 @@
 package services
 
 import (
-	"context"
-	"fmt"
+  "context"
+  "fmt"
+  "net/http"
+  "strconv"
 
-	models "github.com/Ayasono/simple-kins-backend/models"
-	"github.com/gin-gonic/gin"
+  models "github.com/Ayasono/simple-kins-backend/models"
+  "github.com/Ayasono/simple-kins-backend/utils"
+  "github.com/gin-gonic/gin"
 )
 
 func ListProducts(c *gin.Context, queries *models.Queries) {
-	// 假设你想缓存这个响应1小时
-	maxAge := 3600 // 单位为秒
+  maxAge := 3600 // 单位为秒
+  const defaultPage = 0
+  const defaultPageSize = 50
 
-	products, err := queries.ListProducts(context.Background(), models.ListProductsParams{
-		Limit:  50,
-		Offset: 0,
-	})
+  // 尝试转换 page，如果失败则使用默认值
+  page, err := strconv.Atoi(c.Query("page")) // 从 query string 中获取 page 参数
+  if err != nil || page < 1 {
+    page = defaultPage
+  }
 
-	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
-		return
-	}
+  // 尝试转换 pageSize，如果失败则使用默认值
+  pageSize, err := strconv.Atoi(c.Query("pageSize"))
+  if err != nil || pageSize <= 0 {
+    pageSize = defaultPageSize
+  }
 
-	// 设置 Cache-Control 头部，允许客户端和代理服务器缓存这个响应1小时
-	c.Header("Cache-Control", fmt.Sprintf("public, max-age=%d", maxAge))
+  offset := page * pageSize
 
-	c.JSON(200, gin.H{
-		"msg":      "ok",
-		"products": products,
-	})
+  products, err := queries.ListProducts(context.Background(), models.ListProductsParams{
+    Limit:  int32(pageSize),
+    Offset: int32(offset),
+  })
+
+  if err != nil {
+    c.JSON(http.StatusInternalServerError, utils.GeneralResStruct{
+      Msg:   "not ok",
+      Error: err.Error(),
+    })
+    return
+  }
+
+  // 设置 Cache-Control 头部，允许客户端和代理服务器缓存这个响应1小时
+  c.Header("Cache-Control", fmt.Sprintf("public, max-age=%d", maxAge))
+
+  c.JSON(http.StatusOK, utils.GeneralResStruct{
+    Msg:  "ok",
+    Data: products,
+  })
 }
 
 func GetProductCategories(c *gin.Context, queries *models.Queries) {
-	categories, err := queries.GetProductCategories(context.Background())
-	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(200, gin.H{
-		"msg":        "ok",
-		"categories": categories,
-	})
+  categories, err := queries.GetProductCategories(context.Background())
+  if err != nil {
+    c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+    return
+  }
+  c.JSON(http.StatusOK, gin.H{
+    "msg":        "ok",
+    "categories": categories,
+  })
 }
