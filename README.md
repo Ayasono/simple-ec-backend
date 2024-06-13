@@ -2,7 +2,7 @@
 
 ## 1. Introduction
 
-The project is a backend API for the KINS project. It is a RESTful API that provides endpoints for the KINS frontend to
+The project is a backend API for a ec site. It is a RESTful API that provides endpoints for the frontend to
 interact with the backend.
 
 ## 2. used technologies
