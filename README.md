@@ -1,4 +1,4 @@
-# KINS backend API
+# ec site backend API
 
 ## 1. Introduction
 
